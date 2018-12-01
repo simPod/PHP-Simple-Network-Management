@@ -2,37 +2,65 @@ dist: trusty
 language: php
 sudo: required
 
-php:
-  - 7.1
-  - 7.2
-  - nightly
+env:
+    - DOCKER_COMPOSE="docker-compose -f .ci/docker-compose.yaml"
+
+services:
+    - docker
 
 before_install:
-  - echo "extension = snmp.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - composer self-update
+#    - sudo apt-get install libperl-dev
+#    - mkdir -p ~/net-snmp/
+#    - wget -qO- https://netix.dl.sourceforge.net/project/net-snmp/net-snmp/5.8/net-snmp-5.8.tar.gz | tar -xz --strip-components 1 -C ~/net-snmp/
+#    - cd ~/net-snmp/
+#    - ./configure --with-default-snmp-version="2" --with-sys-contact="contact" --with-sys-location="location" --with-logfile="/var/log/snmpd.log" --with-persistent-directory="/var/net-snmp"
+#    - make
+#    - sudo make install
+#    - mkdir -p ~/php7-latest/
+#    - wget -qO- http://de2.php.net/get/php-7.1.23.tar.gz/from/this/mirror | tar -xz --strip-components 1 -C ~/php7-latest/
+#    - cd ~/php7-latest/
+#    - ./configure --with-snmp="/usr/share/snmp/mibs"
+##        --enable-mbstring \
+##        --enable-phpdbg \
+##        --enable-shmop \
+##        --enable-sockets \
+##        --enable-sysvmsg \
+##        --enable-sysvsem \
+##        --enable-sysvshm \
+##        --enable-zip \
+##        --with-libzip=/usr/lib/x86_64-linux-gnu \
+##        --with-zlib \
+##        --with-curl \
+##        --with-pear \
+##        --with-openssl \
+##        --enable-pcntl \
+##        --with-readline
+#    - make
+#    - make install
+##    - echo "extension = snmp.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+#    - composer self-update
 
 before_script:
-  - travis_retry composer update --prefer-dist
+    - ${DOCKER_COMPOSE} up -d
+    - ${DOCKER_COMPOSE} ps
+    - ${DOCKER_COMPOSE} run php "php -v"
+    - ${DOCKER_COMPOSE} run php "composer update --prefer-dist"
 
 script: ./vendor/bin/phpunit
 
 jobs:
-  include:
-    - stage: Coding Standard
-      php: 7.1
-      script: ./vendor/bin/phpcs
+    include:
+        -   stage: Test
 
-    - stage: Static Analysis
-      php: 7.1
-      script:
-        - ./vendor/bin/phpstan analyse -c phpstan.neon.dist -l max src
+        -   stage: Coding Standard
+            php: 7.1
+            script: ./vendor/bin/phpcs
+
+        -   stage: Static Analysis
+            php: 7.1
+            script:
+                - ./vendor/bin/phpstan analyse -c phpstan.neon.dist -l max src
 
 cache:
-  directories:
-    - $HOME/.composer/cache
-
-after_script:
-  # upload clover.xml file to Scrutinizer to analyze it
-  - |
-    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-    if [ "$TRAVIS_PHP_VERSION" == "7.1" ]; then php ocular.phar code-coverage:upload --format=php-clover temp/clover.xml; fi
+    directories:
+        - $HOME/.composer/cache
