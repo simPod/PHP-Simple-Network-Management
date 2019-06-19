@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Helper;
 
-use Consistence\Type\ArrayType\ArrayType;
-use Consistence\Type\ArrayType\KeyValuePair;
-
-class TypeMapper
+final class TypeMapper
 {
     /**
-     * @param iterable<string, string> $haystack
+     * @param iterable<string, string> $strings
      *
      * @return array<string, float>
      */
-    public static function stringsToFloats(iterable $haystack) : array
+    public static function stringsToFloats(iterable $strings) : iterable
     {
-        return ArrayType::mapByCallback(
-            $haystack,
-            static function (KeyValuePair $keyValuePair) : KeyValuePair {
-                return new KeyValuePair($keyValuePair->getKey(), (float) $keyValuePair->getValue());
-            }
-        );
+        foreach ($strings as $key => $string) {
+            yield $key => (float) $string;
+        }
     }
 }

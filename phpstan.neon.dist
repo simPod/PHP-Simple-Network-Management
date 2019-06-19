@@ -7,9 +7,7 @@ parameters:
     ignoreErrors:
         - '~should return iterable<string, .*?> but returns iterable<string, mixed>.$~'
         - '~expects iterable<string, .*?>, iterable<string, mixed> given.$~'
-        -
-            message: '~^Parameter #1 \$haystack of static method Consistence\\Type\\ArrayType\\ArrayType::mapByCallback\(\) expects array, iterable<string, string> given.$~'
-            path: %currentWorkingDirectory%/src/Helper/TypeMapper.php
+        - '~SNMP_OID_OUTPUT_NUMERIC not found~'
 
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon

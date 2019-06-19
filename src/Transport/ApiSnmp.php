@@ -4,28 +4,24 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Transport;
 
+use GuzzleHttp\Client;
 use SimPod\PhpSnmp\Exception\SnmpApiError;
 use function array_key_exists;
 use function base64_decode;
-use function curl_close;
-use function curl_error;
-use function curl_exec;
-use function curl_init;
-use function curl_setopt;
 use function is_array;
 use function is_bool;
 use function json_decode;
 use function json_last_error_msg;
 use function strtr;
-use const CURLOPT_CONNECTTIMEOUT;
-use const CURLOPT_HEADER;
-use const CURLOPT_RETURNTRANSFER;
-use const CURLOPT_TIMEOUT;
 use const JSON_BIGINT_AS_STRING;
+use function var_dump;
 
 final class ApiSnmp implements Snmp
 {
-    private const API_PATH = '/snmp/{community}/{host}/{oid}';
+    private const API_PATH = '/snmp/{host}/{community}/{oid}';
+
+    /** @var Client */
+    private $guzzle;
 
     /** @var string */
     private $apiHostUrl;
@@ -40,11 +36,13 @@ final class ApiSnmp implements Snmp
     private $timeout;
 
     public function __construct(
+        Client $guzzle,
         string $apiHostUrl,
         string $community = 'public',
         string $host = '127.0.0.1',
         int $timeout = 30
     ) {
+        $this->guzzle = $guzzle;
         $this->apiHostUrl = $apiHostUrl;
         $this->community  = $community;
         $this->host       = $host;
@@ -85,24 +83,8 @@ final class ApiSnmp implements Snmp
             $url .= '?strip=1';
         }
 
-        $curl = curl_init($url);
-        if (is_bool($curl)) {
-            throw SnmpApiError::curlInitFailed($url);
-        }
-
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->timeout);
-        curl_setopt($curl, CURLOPT_TIMEOUT, $this->timeout);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $result = curl_exec($curl);
-        $error  = curl_error($curl);
-        curl_close($curl);
-
-        if (is_bool($result)) {
-            throw SnmpApiError::connectionFailed($error);
-        }
-
-        $json = json_decode($result, true, 4, JSON_BIGINT_AS_STRING);
+        $response = $this->guzzle->get($url, ['timeout' => $this->timeout]);
+        $json = json_decode((string) $response->getBody(), true, 4, JSON_BIGINT_AS_STRING);
         if ($json === null) {
             throw SnmpApiError::invalidJson(json_last_error_msg());
         }

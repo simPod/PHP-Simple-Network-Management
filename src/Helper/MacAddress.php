@@ -24,10 +24,6 @@ class MacAddress
     {
         if (strlen($macAddress) === 6) {
             $macAddress = bin2hex($macAddress);
-            if (strlen($macAddress) !== 12) {
-                return null;
-            }
-
             $formattedMacAddress = '';
             for ($i = 0; $i < 12; $i++) {
                 $formattedMacAddress .= $macAddress[$i];

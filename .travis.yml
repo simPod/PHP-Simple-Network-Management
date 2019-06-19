@@ -1,38 +1,65 @@
-dist: trusty
+dist: xenial
 language: php
 sudo: required
 
 php:
-  - 7.2
-  - 7.3
-  - nightly
+    - "7.2"
+    - "7.3"
+    - 7.4snapshot
+    - nightly
+
+env:
+    - DEPENDENCIES=
+    - DEPENDENCIES=--prefer-lowest
+
+addons:
+    apt:
+        sources:
+            -   sourceline: ppa:ondrej/php
+        packages:
+            - php$TRAVIS_PHP_VERSION-cli
+            - php$TRAVIS_PHP_VERSION-snmp
+            - php$TRAVIS_PHP_VERSION-xmlwriter
+            - snmp
 
 before_install:
-  - echo "extension = snmp.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - composer self-update
+    - phpenv global system
+    - wget https://getcomposer.org/installer -O - -q | php -- --quiet
+    - sudo mv composer.phar /usr/local/bin/composer
 
-before_script:
-  - travis_retry composer update --prefer-dist
+install: composer update --no-interaction --prefer-stable --prefer-dist $DEPENDENCIES
 
-script: ./vendor/bin/phpunit
+script: make test
+
+stages:
+    - Code Quality
+    - Test
 
 jobs:
-  include:
-    - stage: Coding Standard
-      php: 7.2
-      script: ./vendor/bin/phpcs
+    allow_failures:
+        -   php: 7.4snapshot
+        -   php: nightly
 
-    - stage: Static Analysis
-      php: 7.2
-      script:
-        - ./vendor/bin/phpstan analyse -c phpstan.neon.dist -l max src
+    include:
+        -   stage: Code Quality
+            name: Lint
+            php: "7.3"
+            script: make lint
+        -   name: Coding Standard
+            php: "7.3"
+            script: make cs
+        -   name: Static Analysis
+            php: "7.3"
+            script: make static-analysis
 
 cache:
-  directories:
-    - $HOME/.composer/cache
+    directories:
+        - $HOME/.composer/cache
 
-after_script:
-  # upload clover.xml file to Scrutinizer to analyze it
-  - |
-    if [ "$TRAVIS_PHP_VERSION" == "7.2" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-    if [ "$TRAVIS_PHP_VERSION" == "7.2" ]; then php ocular.phar code-coverage:upload --format=php-clover temp/clover.xml; fi
+after_script: |
+    if [ "$TRAVIS_PHP_VERSION" != "7.3" ]; then
+        return
+    fi
+
+    wget https://scrutinizer-ci.com/ocular.phar
+    php ocular.phar code-coverage:upload --format=php-clover temp/clover.xml

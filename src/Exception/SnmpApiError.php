@@ -10,16 +10,6 @@ use function sprintf;
 
 final class SnmpApiError extends RuntimeException implements SnmpException
 {
-    public static function curlInitFailed(string $url) : self
-    {
-        return new self(sprintf('curl_init() failed for URL "%s"', $url));
-    }
-
-    public static function connectionFailed(string $error) : self
-    {
-        return new self(sprintf('Failed to connect to the SNMP API: %s', $error));
-    }
-
     public static function invalidJson(string $error) : self
     {
         return new self(sprintf('Failed to decode JSON response: %s', $error));
