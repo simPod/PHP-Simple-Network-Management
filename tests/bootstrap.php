@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SimPod\GraphQL\Utils;
+namespace SimPod\PhpSnmp\Tests;
 
 use function date_default_timezone_set;
 use function error_reporting;

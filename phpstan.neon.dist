@@ -1,11 +1,9 @@
 parameters:
-    memory-limit: -1
     level: max
     paths:
         - %currentWorkingDirectory%/src
         - %currentWorkingDirectory%/tests
-
-includes:
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    ignoreErrors:
+        # extension is badly designed, we know these types won't ever be here
+        - '~Parameter #1 \$output of method SimPod\\PhpSnmp\\Transport\\ExtensionSnmpClient::processOutput\(\) expects array<string, string>, array\|string\|false given\.~'
+        - '~Parameter #1 \$output of method SimPod\\PhpSnmp\\Transport\\ExtensionSnmpClient::processOutput\(\) expects array<string, string>, array\|false given\.~'

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SimPod\PhpSnmp;
+namespace SimPod\PhpSnmp\Exception;
 
 use Throwable;
 

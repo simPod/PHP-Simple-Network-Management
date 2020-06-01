@@ -1,0 +1,142 @@
+name: CI
+on: [push, pull_request]
+jobs:
+    phpstan:
+        name: PHPStan
+        runs-on: ubuntu-20.04
+        strategy:
+            matrix:
+                php-version: [7.3]
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: none
+                    php-version: ${{ matrix.php-version }}
+                    extensions: json
+                    tools: cs2pr
+
+            -   name: Install dependencies
+                run: sudo apt install php${{ matrix.php-version }}-snmp
+
+            -   name: Cache dependencies installed with composer
+                uses: actions/cache@v1
+                with:
+                    path: ~/.composer/cache
+                    key: php-${{ matrix.php-version }}
+                    restore-keys: php-${{ matrix.php-version }}
+
+            -   name: Install dependencies with composer
+                run: COMPOSER_ARGS="--prefer-stable" make
+
+            -   name: Run a static analysis with phpstan/phpstan
+                env:
+                    PHPSTAN_ARGS: --error-format=checkstyle
+                run: make -is static-analysis | cs2pr
+
+    coding-standards:
+        name: Coding Standards
+        runs-on: ubuntu-20.04
+        strategy:
+            matrix:
+                php-version: [7.3]
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: none
+                    php-version: ${{ matrix.php-version }}
+                    tools: cs2pr
+
+            -   name: Install dependencies
+                run: sudo apt install php${{ matrix.php-version }}-snmp
+
+            -   name: Cache dependencies installed with composer
+                uses: actions/cache@v1
+                with:
+                    path: ~/.composer/cache
+                    key: php-${{ matrix.php-version }}
+                    restore-keys: php-${{ matrix.php-version }}
+
+            -   name: Install dependencies with composer
+                run: COMPOSER_ARGS="--prefer-stable" make
+
+            -   name: Run squizlabs/php_codesniffer
+                env:
+                    PHPCS_ARGS: -q --no-colors --report=checkstyle
+                run: make -is cs | cs2pr
+
+    tests:
+        name: Tests
+        runs-on: ubuntu-20.04
+        strategy:
+            matrix:
+                php-version: [7.3, 7.4]
+                dependencies: ["", --prefer-lowest]
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: none
+                    php-version: ${{ matrix.php-version }}
+                    extensions: json
+
+            -   name: Install dependencies
+                run: sudo apt install php${{ matrix.php-version }}-snmp python3-pip snmp
+
+            -   name: Install snmpsim
+                run: sudo pip3 install snmpsim
+
+            -   name: Cache dependencies installed with composer
+                uses: actions/cache@v1
+                with:
+                    path: ~/.composer/cache
+                    key: php-${{ matrix.php-version }}-dependencies-${{ matrix.dependencies }}
+                    restore-keys: php-${{ matrix.php-version }}
+
+            -   name: Install dependencies with composer
+                run: COMPOSER_ARGS="--prefer-stable ${{ matrix.dependencies }}" make
+
+            -   name: Run tests
+                run: make test
+
+    coverage:
+        name: Tests Coverage
+        runs-on: ubuntu-20.04
+        strategy:
+            matrix:
+                php-version: [7.4]
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    coverage: pcov
+                    php-version: ${{ matrix.php-version }}
+                    extensions: json
+
+            -   name: Install dependencies
+                run: sudo apt install php${{ matrix.php-version }}-snmp python3-pip snmp
+
+            -   name: Install snmpsim
+                run: sudo pip3 install snmpsim
+
+            -   name: Cache dependencies installed with composer
+                uses: actions/cache@v1
+                with:
+                    path: ~/.composer/cache
+                    key: php-${{ matrix.php-version }}
+                    restore-keys: php-${{ matrix.php-version }}
+
+            -   name: Install dependencies with composer
+                run: COMPOSER_ARGS="--prefer-stable" make
+
+            -   name: Run tests coverage
+                run: PHPUNIT_ARGS="--coverage-clover coverage/clover.xml" make test
+
+            -   name: Report to Coveralls
+                env:
+                    COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    COVERALLS_RUN_LOCALLY: 1
+                run: vendor/bin/php-coveralls --coverage_clover coverage/clover.xml --json_path coverage/coveralls.json

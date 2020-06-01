@@ -1,14 +1,8 @@
 {
     "name": "simpod/php-snmp",
-    "description": "PHP Simple Network Management",
+    "description": "PHP library for connecting to the SNMP agents using various transports; includes small collection of OIDs",
     "type": "library",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Simon Podlipsky",
-            "email": "simon@podlipsky.net"
-        }
-    ],
     "keywords": [
         "php",
         "snmp"
@@ -17,14 +11,35 @@
         "sort-packages": true
     },
     "require": {
-        "php": "^7.2",
-        "ext-snmp": "*",
-        "consistence/consistence": "^1.0|^2.0"
+        "php": "^7.3 || ^8.0",
+        "roave/you-are-using-it-wrong": "^1.4"
+    },
+    "suggest": {
+        "ext-json": "Required for SNMP transport \"Api\"",
+        "psr/http-client": "Required for SNMP transport \"Api\"",
+        "psr/http-factory": "Required for SNMP transport \"Api\"",
+        "symfony/process": "Required for default implementation of SNMP transport \"Cli\"",
+        "ext-snmp": "Required for SNMP transport \"Extension\""
     },
     "require-dev": {
+        "ext-json": "*",
+        "ext-snmp": "*",
         "cdn77/coding-standard": "^3.0",
-        "phpstan/phpstan": "^0.11.5",
-        "phpstan/phpstan-strict-rules": "^0.11.0"
+        "nyholm/psr7": "^1.3",
+        "php-http/curl-client": "^2.1",
+        "phpstan/extension-installer": "^1.0",
+        "phpstan/phpstan": "^0.12.25",
+        "phpstan/phpstan-deprecation-rules": "^0.12.3",
+        "phpstan/phpstan-phpunit": "^0.12.8",
+        "phpstan/phpstan-strict-rules": "^0.12.2",
+        "phpunit/phpunit": "^9.1",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0",
+        "simpod/php-coveralls-mirror": "^3.0",
+        "squizlabs/php_codesniffer": "^3.5",
+        "symfony/process": "^4.3",
+        "thecodingmachine/phpstan-safe-rule": "^1.0"
     },
     "autoload": {
         "psr-4": {

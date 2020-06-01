@@ -7,7 +7,7 @@ namespace SimPod\PhpSnmp\Mib;
 /**
  * See RFC 2790 https://tools.ietf.org/html/rfc2790
  */
-class HostResources extends MibBase
+final class HostResources
 {
     public const OID_HOST                              = '.1.3.6.1.2.1.25';
     public const OID_HR_SYSTEM                         = '.1.3.6.1.2.1.25.1';
@@ -113,58 +113,4 @@ class HostResources extends MibBase
     public const OID_HR_SWRUN_GROUP                    = '.1.3.6.1.2.1.25.7.3.4';
     public const OID_HR_SWRUN_PERF_GROUP               = '.1.3.6.1.2.1.25.7.3.5';
     public const OID_HR_SWINSTALLED_GROUP              = '.1.3.6.1.2.1.25.7.3.6';
-
-    /** @return int[] */
-    public function getHost() : array
-    {
-        return $this->getSnmp()->walk(self::OID_HOST);
-    }
-
-    /** @return string[] */
-    public function getHrStorageType() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_STORAGE_TYPE);
-    }
-
-    /** @return string[] */
-    public function getHrStorageDescr() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_STORAGE_DESCR);
-    }
-
-    /** @return int[] */
-    public function getHrStorageSize() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_STORAGE_SIZE);
-    }
-
-    /** @return int[] */
-    public function getHrStorageUsed() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_STORAGE_USED);
-    }
-
-    /** @return int[] */
-    public function getHrDeviceType() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_DEVICE_TYPE);
-    }
-
-    /** @return string[] */
-    public function getHrDeviceDescr() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_DEVICE_DESCR);
-    }
-
-    /** @return int[] */
-    public function getHrDeviceStatus() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_DEVICE_STATUS);
-    }
-
-    /** @return int[] */
-    public function getHrProcessorLoad() : array
-    {
-        return $this->getSnmp()->walkFirstDegree(self::OID_HR_PROCESSOR_LOAD);
-    }
 }

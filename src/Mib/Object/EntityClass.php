@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Mib\Object;
 
-use Consistence\Enum\Enum;
-
-class EntityClass extends Enum
+final class EntityClass
 {
     public const OTHER        = 1;
     public const UNKNOWN      = 2;
@@ -19,59 +17,4 @@ class EntityClass extends Enum
     public const MODULE       = 9;
     public const PORT         = 10;
     public const STACK        = 11;
-
-    public static function getOther() : self
-    {
-        return self::get(self::OTHER);
-    }
-
-    public static function getUnknown() : self
-    {
-        return self::get(self::UNKNOWN);
-    }
-
-    public static function getChassis() : self
-    {
-        return self::get(self::CHASSIS);
-    }
-
-    public static function getBackplane() : self
-    {
-        return self::get(self::BACKPLANE);
-    }
-
-    public static function getContainer() : self
-    {
-        return self::get(self::CONTAINER);
-    }
-
-    public static function getPowerSupply() : self
-    {
-        return self::get(self::POWER_SUPPLY);
-    }
-
-    public static function getFan() : self
-    {
-        return self::get(self::FAN);
-    }
-
-    public static function getSensor() : self
-    {
-        return self::get(self::SENSOR);
-    }
-
-    public static function getModule() : self
-    {
-        return self::get(self::MODULE);
-    }
-
-    public static function getPort() : self
-    {
-        return self::get(self::PORT);
-    }
-
-    public static function getStack() : self
-    {
-        return self::get(self::STACK);
-    }
 }

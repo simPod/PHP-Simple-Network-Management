@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Mib\Object;
 
-class HrDeviceStatus
+final class HrDeviceStatus
 {
     public const UNKNOWN = 1;
     public const RUNNING = 2;

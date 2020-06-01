@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Mib\Object;
 
-class HrDeviceType
+final class HrDeviceType
 {
     public const HR_DEVICE_OTHER               = 1;
     public const HR_DEVICE_UNKNOWN             = 2;
