@@ -22,4 +22,7 @@ interface SnmpClient
 
     /** @return array<string, mixed> */
     public function walk(string $oid, int $maxRepetitions = 40) : array;
+
+    /** @return list<array<string, mixed>> */
+    public function bulk(Request... $request) : array;
 }
