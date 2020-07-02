@@ -239,33 +239,6 @@ JSON;
         self::assertSame(['.1.3.6.1.2.1.2.2.1.2.1000009' => 'Port-Channel9'], $result);
     }
 
-    public function testHttpError() : void
-    {
-        $this->client = $this->createMock(Client::class);
-        $psr17Factory = new Psr17Factory();
-
-        $apiSnmp = new ApiSnmpClient(
-            $this->client,
-            $psr17Factory,
-            $psr17Factory,
-            'http://somewhere',
-            'lorem',
-            'ipsum',
-            50,
-            5,
-            '1'
-        );
-
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(500);
-
-        $this->client->method('sendRequest')->willReturn($response);
-
-        $this->expectExceptionObject(GeneralException::new('Unexpected HTTP status code: 500, oids: .1.3.6'));
-
-        $apiSnmp->get(['.1.3.6']);
-    }
-
     public function testErrorJsonDecodingResponse() : void
     {
         $this->client = $this->createMock(Client::class);
@@ -284,10 +257,10 @@ JSON;
         );
 
         $response = '{wow this is not a valid json response';
-        $this->client->method('sendRequest')->willReturn($this->createResponse($response));
+        $this->client->method('sendRequest')->willReturn($this->createResponse($response, 500));
 
         $this->expectExceptionObject(
-            GeneralException::new(sprintf('Response is not valid JSON: "%s", oids: .1.3.6', $response))
+            GeneralException::new(sprintf('Response is not valid JSON [HTTP 500]: "%s", oids: .1.3.6', $response))
         );
 
         $apiSnmp->get(['.1.3.6']);
@@ -361,14 +334,17 @@ JSON;
         return new ApiSnmpClient($this->client, $psr17Factory, $psr17Factory, 'http://localhost');
     }
 
-    private function createResponse(string $body) : ResponseInterface
+    private function createResponse(string $body, ?int $statusCode = null) : ResponseInterface
     {
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('__toString')->willReturn($body);
 
         $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
+
+        if ($statusCode !== null) {
+            $response->method('getStatusCode')->willReturn($statusCode);
+        }
 
         return $response;
     }

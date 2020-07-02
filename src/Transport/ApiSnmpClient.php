@@ -126,23 +126,17 @@ final class ApiSnmpClient implements SnmpClient
             throw GeneralException::fromThrowable($throwable, $oids);
         }
 
-        if ($response->getStatusCode() !== 200) {
-            throw GeneralException::new(
-                sprintf('Unexpected HTTP status code: %d', $response->getStatusCode()),
-                null,
-                $oids
-            );
-        }
-
         try {
             /** @var array{error: string}|array{result: list<string>} $result */
             $result = json_decode((string) $response->getBody(), true, 4, JSON_BIGINT_AS_STRING);
         } catch (JsonException $throwable) {
-            throw GeneralException::new(
-                sprintf('Response is not valid JSON: "%s"', (string) $response->getBody()),
-                $throwable,
-                $oids
+            $error = sprintf(
+                'Response is not valid JSON [HTTP %d]: "%s"',
+                $response->getStatusCode(),
+                (string) $response->getBody()
             );
+
+            throw GeneralException::new($error, $throwable, $oids);
         }
 
         if (array_key_exists('error', $result)) {
@@ -158,7 +152,7 @@ final class ApiSnmpClient implements SnmpClient
                 throw EndOfMibReached::fromOid($matches[1]);
             }
 
-            throw GeneralException::new($result['error']);
+            throw GeneralException::new($result['error'], null, $oids);
         }
 
         $oidsAndValues = $result['result'];
