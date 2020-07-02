@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace SimPod\PhpSnmp\Transport;
 
+use Psr\Log\LoggerInterface;
 use SimPod\PhpSnmp\Exception\GeneralException;
 
 final class FallbackSnmpClient implements SnmpClient
 {
+    /** @var LoggerInterface */
+    private $logger;
+
     /** @var SnmpClient[] */
     private $snmpClients;
 
-    public function __construct(SnmpClient ...$snmpClients)
+    public function __construct(LoggerInterface $logger, SnmpClient ...$snmpClients)
     {
         if ($snmpClients === []) {
             throw GeneralException::new('No SNMP clients provided');
         }
 
+        $this->logger      = $logger;
         $this->snmpClients = $snmpClients;
     }
 
@@ -57,11 +62,18 @@ final class FallbackSnmpClient implements SnmpClient
      */
     private function tryClients(callable $requestCallback) : array
     {
-        foreach ($this->snmpClients as $snmpClient) {
+        foreach ($this->snmpClients as $i => $snmpClient) {
             try {
                 return $requestCallback($snmpClient);
             } catch (GeneralException $exception) {
-                // try next client
+                $this->logger->warning(
+                    'SNMP request failed',
+                    [
+                        'sequenceNumber' => $i,
+                        'client' => $snmpClient,
+                        'exception' => $exception,
+                    ]
+                );
             }
         }
 
